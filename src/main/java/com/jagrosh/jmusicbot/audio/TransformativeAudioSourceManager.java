@@ -37,7 +37,11 @@ import org.slf4j.LoggerFactory;
 public class TransformativeAudioSourceManager extends YoutubeAudioSourceManager
 {
     private final static Logger log = LoggerFactory.getLogger(TransformativeAudioSourceManager.class);
-    private final String name, regex, replacement, selector, format;
+    private final String name;
+    private final String regex;
+    private final String replacement;
+    private final String selector;
+    private final String format;
     
     public TransformativeAudioSourceManager(String name, Config object)
     {

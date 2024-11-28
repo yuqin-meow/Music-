@@ -29,7 +29,6 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.ApplicationInfo;
 import net.dv8tion.jda.api.entities.User;
-import okhttp3.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;

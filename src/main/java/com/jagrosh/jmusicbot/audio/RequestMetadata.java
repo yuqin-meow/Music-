@@ -52,7 +52,8 @@ public class RequestMetadata
     
     public static class RequestInfo
     {
-        public final String query, url;
+        public final String query;
+        public final String url;
         public final long startTimestamp;
 
         public RequestInfo(String query, String url)
@@ -78,7 +79,9 @@ public class RequestMetadata
     public static class UserInfo
     {
         public final long id;
-        public final String username, discrim, avatar;
+        public final String username;
+        public final String discrim;
+        public final String avatar;
         
         private UserInfo(long id, String username, String discrim, String avatar)
         {

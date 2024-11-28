@@ -19,7 +19,6 @@ import com.jagrosh.jmusicbot.entities.Prompt;
 import com.jagrosh.jmusicbot.utils.OtherUtil;
 import com.jagrosh.jmusicbot.utils.TimeUtil;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import com.typesafe.config.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,21 +33,44 @@ import net.dv8tion.jda.api.entities.Activity;
 public class BotConfig
 {
     private final Prompt prompt;
+
     private final static String CONTEXT = "Config";
     private final static String START_TOKEN = "/// START OF JMUSICBOT CONFIG ///";
     private final static String END_TOKEN = "/// END OF JMUSICBOT CONFIG ///";
-    
+
     private Path path = null;
-    private String token, prefix, altprefix, helpWord, playlistsFolder, logLevel,
-            successEmoji, warningEmoji, errorEmoji, loadingEmoji, searchingEmoji,
-            evalEngine;
-    private boolean stayInChannel, songInGame, npImages, updatealerts, useEval, dbots;
-    private long owner, maxSeconds, aloneTimeUntilStop;
+    private String token;
+    private String prefix;
+    private String altprefix;
+    private String helpWord;
+    private String playlistsFolder;
+    private String logLevel;
+    private String successEmoji;
+    private String warningEmoji;
+    private String errorEmoji;
+    private String loadingEmoji;
+    private String searchingEmoji;
+    private String evalEngine;
+
+    private boolean stayInChannel;
+    private boolean songInGame;
+    private boolean npImages;
+    private boolean updatealerts;
+    private boolean useEval;
+    private boolean dbots;
+
+    private long owner;
+    private long maxSeconds;
+    private long aloneTimeUntilStop;
+
     private int maxYTPlaylistPages;
+
     private double skipratio;
+
     private OnlineStatus status;
     private Activity game;
-    private Config aliases, transforms;
+    private Config aliases;
+    private Config transforms;
 
     private boolean valid = false;
     
@@ -360,9 +382,7 @@ public class BotConfig
     
     public boolean isTooLong(AudioTrack track)
     {
-        if(maxSeconds<=0)
-            return false;
-        return Math.round(track.getDuration()/1000.0) > maxSeconds;
+        return !maxSeconds<=0 || Math.round(track.getDuration()/1000.0) > maxSeconds;
     }
 
     public String[] getAliases(String command)

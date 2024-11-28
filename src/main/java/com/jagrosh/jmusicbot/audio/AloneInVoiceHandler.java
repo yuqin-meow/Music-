@@ -44,20 +44,25 @@ public class AloneInVoiceHandler
     public void init()
     {
         aloneTimeUntilStop = bot.getConfig().getAloneTimeUntilStop();
-        if(aloneTimeUntilStop > 0)
+        if (aloneTimeUntilStop > 0)
+        {
             bot.getThreadpool().scheduleWithFixedDelay(() -> check(), 0, 5, TimeUnit.SECONDS);
+        }
     }
     
     private void check()
     {
         Set<Long> toRemove = new HashSet<>();
-        for(Map.Entry<Long, Instant> entrySet: aloneSince.entrySet())
+        for (Map.Entry<Long, Instant> entrySet : aloneSince.entrySet())
         {
-            if(entrySet.getValue().getEpochSecond() > Instant.now().getEpochSecond() - aloneTimeUntilStop) continue;
+            if (entrySet.getValue().getEpochSecond() > Instant.now().getEpochSecond() - aloneTimeUntilStop)
+            {
+                continue;
+            }
 
             Guild guild = bot.getJDA().getGuildById(entrySet.getKey());
 
-            if(guild == null)
+            if (guild == null)
             {
                 toRemove.add(entrySet.getKey());
                 continue;
@@ -73,23 +78,36 @@ public class AloneInVoiceHandler
 
     public void onVoiceUpdate(GuildVoiceUpdateEvent event)
     {
-        if(aloneTimeUntilStop <= 0) return;
+        if (aloneTimeUntilStop <= 0)
+        {
+            return;
+        }
 
         Guild guild = event.getEntity().getGuild();
-        if(!bot.getPlayerManager().hasHandler(guild)) return;
+        if (!bot.getPlayerManager().hasHandler(guild))
+        {
+            return;
+        }
 
         boolean alone = isAlone(guild);
         boolean inList = aloneSince.containsKey(guild.getIdLong());
 
-        if(!alone && inList)
+        if (!alone && inList)
+        {
             aloneSince.remove(guild.getIdLong());
-        else if(alone && !inList)
+        } 
+        else if (alone && !inList)
+        {
             aloneSince.put(guild.getIdLong(), Instant.now());
+        }
     }
 
     private boolean isAlone(Guild guild)
     {
-        if(guild.getAudioManager().getConnectedChannel() == null) return false;
+        if (guild.getAudioManager().getConnectedChannel() == null)
+        {
+            return false;
+        }
         return guild.getAudioManager().getConnectedChannel().getMembers().stream()
                 .noneMatch(x ->
                         !x.getVoiceState().isDeafened()
