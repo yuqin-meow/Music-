@@ -15,33 +15,28 @@
  */
 package com.jagrosh.jmusicbot.audio;
 
-import com.jagrosh.jmusicbot.playlist.PlaylistLoader.Playlist;
+import java.nio.ByteBuffer;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import org.slf4j.LoggerFactory;
+
+import com.jagrosh.jmusicbot.playlist.Playlist;
 import com.jagrosh.jmusicbot.queue.AbstractQueue;
 import com.jagrosh.jmusicbot.settings.QueueType;
-import com.jagrosh.jmusicbot.utils.TimeUtil;
 import com.jagrosh.jmusicbot.settings.RepeatMode;
+import com.jagrosh.jmusicbot.settings.Settings;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import com.jagrosh.jmusicbot.settings.Settings;
-import com.jagrosh.jmusicbot.utils.FormatUtil;
-import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioTrack;
-import java.nio.ByteBuffer;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.MessageBuilder;
+
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.User;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -49,11 +44,6 @@ import org.slf4j.LoggerFactory;
  */
 public class AudioHandler extends AudioEventAdapter implements AudioSendHandler 
 {
-    public final static String PLAY_EMOJI  = "\u25B6"; // ▶
-    public final static String PAUSE_EMOJI = "\u23F8"; // ⏸
-    public final static String STOP_EMOJI  = "\u23F9"; // ⏹
-
-
     private final List<AudioTrack> defaultQueue = new LinkedList<>();
     private final Set<String> votes = new HashSet<>();
     
@@ -115,12 +105,7 @@ public class AudioHandler extends AudioEventAdapter implements AudioSendHandler
         audioPlayer.stopTrack();
         //current = null;
     }
-    
-    public boolean isMusicPlaying(JDA jda)
-    {
-        return guild(jda).getSelfMember().getVoiceState().inVoiceChannel() && audioPlayer.getPlayingTrack()!=null;
-    }
-    
+
     public Set<String> getVotes()
     {
         return votes;
@@ -212,75 +197,7 @@ public class AudioHandler extends AudioEventAdapter implements AudioSendHandler
         votes.clear();
         manager.getBot().getNowplayingHandler().onTrackUpdate(track);
     }
-
     
-    // Formatting
-    public Message getNowPlaying(JDA jda)
-    {
-        if(isMusicPlaying(jda))
-        {
-            Guild guild = guild(jda);
-            AudioTrack track = audioPlayer.getPlayingTrack();
-            MessageBuilder mb = new MessageBuilder();
-            mb.append(FormatUtil.filter(manager.getBot().getConfig().getSuccess()+" **Now Playing in "+guild.getSelfMember().getVoiceState().getChannel().getAsMention()+"...**"));
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setColor(guild.getSelfMember().getColor());
-            RequestMetadata rm = getRequestMetadata();
-            if(rm.getOwner() != 0L)
-            {
-                User u = guild.getJDA().getUserById(rm.user.id);
-                if(u==null)
-                    eb.setAuthor(FormatUtil.formatUsername(rm.user), null, rm.user.avatar);
-                else
-                    eb.setAuthor(FormatUtil.formatUsername(u), null, u.getEffectiveAvatarUrl());
-            }
-
-            try 
-            {
-                eb.setTitle(track.getInfo().title, track.getInfo().uri);
-            }
-            catch(Exception e) 
-            {
-                eb.setTitle(track.getInfo().title);
-            }
-
-            if(track instanceof YoutubeAudioTrack && manager.getBot().getConfig().useNPImages())
-            {
-                eb.setThumbnail("https://img.youtube.com/vi/"+track.getIdentifier()+"/mqdefault.jpg");
-            }
-            
-            if(track.getInfo().author != null && !track.getInfo().author.isEmpty())
-                eb.setFooter("Source: " + track.getInfo().author, null);
-
-            double progress = (double)audioPlayer.getPlayingTrack().getPosition()/track.getDuration();
-            eb.setDescription(getStatusEmoji()
-                    + " "+FormatUtil.progressBar(progress)
-                    + " `[" + TimeUtil.formatTime(track.getPosition()) + "/" + TimeUtil.formatTime(track.getDuration()) + "]` "
-                    + FormatUtil.volumeIcon(audioPlayer.getVolume()));
-            
-            return mb.setEmbeds(eb.build()).build();
-        }
-        else return null;
-    }
-    
-    public Message getNoMusicPlaying(JDA jda)
-    {
-        Guild guild = guild(jda);
-        return new MessageBuilder()
-                .setContent(FormatUtil.filter(manager.getBot().getConfig().getSuccess()+" **Now Playing...**"))
-                .setEmbeds(new EmbedBuilder()
-                .setTitle("No music playing")
-                .setDescription(STOP_EMOJI+" "+FormatUtil.progressBar(-1)+" "+FormatUtil.volumeIcon(audioPlayer.getVolume()))
-                .setColor(guild.getSelfMember().getColor())
-                .build()).build();
-    }
-
-    public String getStatusEmoji()
-    {
-        return audioPlayer.isPaused() ? PAUSE_EMOJI : PLAY_EMOJI;
-    }
-    
-    // Audio Send Handler methods
     /*@Override
     public boolean canProvide() 
     {
@@ -319,12 +236,5 @@ public class AudioHandler extends AudioEventAdapter implements AudioSendHandler
     public boolean isOpus() 
     {
         return true;
-    }
-    
-    
-    // Private methods
-    private Guild guild(JDA jda)
-    {
-        return jda.getGuildById(guildId);
     }
 }

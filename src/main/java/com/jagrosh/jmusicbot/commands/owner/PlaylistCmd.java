@@ -30,19 +30,27 @@ import com.jagrosh.jmusicbot.playlist.PlaylistLoader.Playlist;
 public class PlaylistCmd extends OwnerCommand 
 {
     private final Bot bot;
-    public PlaylistCmd(Bot bot)
-    {
-        this.bot = bot;
-        this.guildOnly = false;
-        this.name = "playlist";
-        this.arguments = "<append|delete|make|setdefault>";
-        this.help = "playlist management";
-        this.aliases = bot.getConfig().getAliases(this.name);
-        this.children = new OwnerCommand[]{
-            new ListCmd(),
-            new AppendlistCmd(),
-            new DeletelistCmd(),
-            new MakelistCmd(),
+    private boolean guildOnly;
+    private String arguments;
+    private String help;
+    private String[] aliases;
+    private String name;
+    private OwnerCommand[] children;
+       
+    
+        public PlaylistCmd(Bot bot)
+        {
+            this.bot = bot;
+            this.guildOnly = false;
+            this.name = "playlist";
+            this.arguments = "<append|delete|make|setdefault>";
+            this.help = "playlist management";
+            this.aliases = bot.getConfig().getAliases(this.name);
+            this.children = new OwnerCommand[]{
+            new ListCmd(bot),
+            new AppendlistCmd(bot),
+            new DeletelistCmd(bot),
+            new MakelistCmd(bot),
             new DefaultlistCmd(bot)
         };
     }
@@ -57,167 +65,4 @@ public class PlaylistCmd extends OwnerCommand
         event.reply(builder.toString());
     }
     
-    public class MakelistCmd extends OwnerCommand 
-    {
-        public MakelistCmd()
-        {
-            this.name = "make";
-            this.aliases = new String[]{"create"};
-            this.help = "makes a new playlist";
-            this.arguments = "<name>";
-            this.guildOnly = false;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) 
-        {
-            String pname = event.getArgs().replaceAll("\\s+", "_");
-            pname = pname.replaceAll("[*?|\\/\":<>]", "");
-            if(pname == null || pname.isEmpty()) 
-            {
-                event.replyError("Please provide a name for the playlist!");
-            } 
-            else if(bot.getPlaylistLoader().getPlaylist(pname) == null)
-            {
-                try
-                {
-                    bot.getPlaylistLoader().createPlaylist(pname);
-                    event.reply(event.getClient().getSuccess()+" Successfully created playlist `"+pname+"`!");
-                }
-                catch(IOException e)
-                {
-                    event.reply(event.getClient().getError()+" I was unable to create the playlist: "+e.getLocalizedMessage());
-                }
-            }
-            else
-                event.reply(event.getClient().getError()+" Playlist `"+pname+"` already exists!");
-        }
-    }
-    
-    public class DeletelistCmd extends OwnerCommand 
-    {
-        public DeletelistCmd()
-        {
-            this.name = "delete";
-            this.aliases = new String[]{"remove"};
-            this.help = "deletes an existing playlist";
-            this.arguments = "<name>";
-            this.guildOnly = false;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) 
-        {
-            String pname = event.getArgs().replaceAll("\\s+", "_");
-            if(bot.getPlaylistLoader().getPlaylist(pname)==null)
-                event.reply(event.getClient().getError()+" Playlist `"+pname+"` doesn't exist!");
-            else
-            {
-                try
-                {
-                    bot.getPlaylistLoader().deletePlaylist(pname);
-                    event.reply(event.getClient().getSuccess()+" Successfully deleted playlist `"+pname+"`!");
-                }
-                catch(IOException e)
-                {
-                    event.reply(event.getClient().getError()+" I was unable to delete the playlist: "+e.getLocalizedMessage());
-                }
-            }
-        }
-    }
-    
-    public class AppendlistCmd extends OwnerCommand 
-    {
-        public AppendlistCmd()
-        {
-            this.name = "append";
-            this.aliases = new String[]{"add"};
-            this.help = "appends songs to an existing playlist";
-            this.arguments = "<name> <URL> | <URL> | ...";
-            this.guildOnly = false;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) 
-        {
-            String[] parts = event.getArgs().split("\\s+", 2);
-            if(parts.length<2)
-            {
-                event.reply(event.getClient().getError()+" Please include a playlist name and URLs to add!");
-                return;
-            }
-            String pname = parts[0];
-            Playlist playlist = bot.getPlaylistLoader().getPlaylist(pname);
-            if(playlist==null)
-                event.reply(event.getClient().getError()+" Playlist `"+pname+"` doesn't exist!");
-            else
-            {
-                StringBuilder builder = new StringBuilder();
-                playlist.getItems().forEach(item -> builder.append("\r\n").append(item));
-                String[] urls = parts[1].split("\\|");
-                for(String url: urls)
-                {
-                    String u = url.trim();
-                    if(u.startsWith("<") && u.endsWith(">"))
-                        u = u.substring(1, u.length()-1);
-                    builder.append("\r\n").append(u);
-                }
-                try
-                {
-                    bot.getPlaylistLoader().writePlaylist(pname, builder.toString());
-                    event.reply(event.getClient().getSuccess()+" Successfully added "+urls.length+" items to playlist `"+pname+"`!");
-                }
-                catch(IOException e)
-                {
-                    event.reply(event.getClient().getError()+" I was unable to append to the playlist: "+e.getLocalizedMessage());
-                }
-            }
-        }
-    }
-    
-    public class DefaultlistCmd extends AutoplaylistCmd 
-    {
-        public DefaultlistCmd(Bot bot)
-        {
-            super(bot);
-            this.name = "setdefault";
-            this.aliases = new String[]{"default"};
-            this.arguments = "<playlistname|NONE>";
-            this.guildOnly = true;
-        }
-    }
-    
-    public class ListCmd extends OwnerCommand 
-    {
-        public ListCmd()
-        {
-            this.name = "all";
-            this.aliases = new String[]{"available","list"};
-            this.help = "lists all available playlists";
-            this.guildOnly = true;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) 
-        {
-            if(!bot.getPlaylistLoader().folderExists())
-                bot.getPlaylistLoader().createFolder();
-            if(!bot.getPlaylistLoader().folderExists())
-            {
-                event.reply(event.getClient().getWarning()+" Playlists folder does not exist and could not be created!");
-                return;
-            }
-            List<String> list = bot.getPlaylistLoader().getPlaylistNames();
-            if(list==null)
-                event.reply(event.getClient().getError()+" Failed to load available playlists!");
-            else if(list.isEmpty())
-                event.reply(event.getClient().getWarning()+" There are no playlists in the Playlists folder!");
-            else
-            {
-                StringBuilder builder = new StringBuilder(event.getClient().getSuccess()+" Available playlists:\n");
-                list.forEach(str -> builder.append("`").append(str).append("` "));
-                event.reply(builder.toString());
-            }
-        }
-    }
 }

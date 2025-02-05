@@ -15,21 +15,19 @@
  */
 package com.jagrosh.jmusicbot.audio;
 
-import com.jagrosh.jmusicbot.Bot;
-import com.jagrosh.jmusicbot.entities.Pair;
-import com.jagrosh.jmusicbot.settings.Settings;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import net.dv8tion.jda.api.Permission;
+
+import com.jagrosh.jmusicbot.Bot;
+import com.jagrosh.jmusicbot.entities.Pair;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.exceptions.PermissionException;
-import net.dv8tion.jda.api.exceptions.RateLimitedException;
 
 /**
  *
@@ -80,7 +78,7 @@ public class NowplayingHandler
                 toRemove.add(guildId);
                 continue;
             }
-            AudioHandler handler = (AudioHandler)guild.getAudioManager().getSendingHandler();
+            StatusHandler handler = (StatusHandler)guild.getAudioManager().getSendingHandler();
             Message msg = handler.getNowPlaying(bot.getJDA());
             if(msg==null)
             {

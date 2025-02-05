@@ -34,7 +34,7 @@ public class PlaylistsCmd extends MusicCommand
         this.aliases = bot.getConfig().getAliases(this.name);
         this.guildOnly = true;
         this.beListening = false;
-        this.beListening = false;
+        this.bePlaying = false;
     }
     
     @Override
