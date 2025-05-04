@@ -17,6 +17,8 @@ package com.jagrosh.jmusicbot.audio;
 
 import com.dunctebot.sourcemanagers.DuncteBotSources;
 import com.jagrosh.jmusicbot.Bot;
+import com.jagrosh.jmusicbot.BotConfig;
+import com.jagrosh.jmusicbot.utils.YouTubeUtil;
 import com.sedmelluq.discord.lavaplayer.container.MediaContainerRegistry;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -29,7 +31,15 @@ import com.sedmelluq.discord.lavaplayer.source.nico.NicoAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.twitch.TwitchStreamAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.vimeo.VimeoAudioSourceManager;
+import com.sedmelluq.lava.extensions.youtuberotator.YoutubeIpRotatorSetup;
+import com.sedmelluq.lava.extensions.youtuberotator.planner.AbstractRoutePlanner;
+import com.sedmelluq.lava.extensions.youtuberotator.planner.BalancingIpRoutePlanner;
+import com.sedmelluq.lava.extensions.youtuberotator.planner.NanoIpRoutePlanner;
+import com.sedmelluq.lava.extensions.youtuberotator.tools.ip.IpBlock;
+import com.sedmelluq.lava.extensions.youtuberotator.tools.ip.Ipv4Block;
+import com.sedmelluq.lava.extensions.youtuberotator.tools.ip.Ipv6Block;
 import dev.lavalink.youtube.YoutubeAudioSourceManager;
+import dev.lavalink.youtube.clients.Web;
 import net.dv8tion.jda.api.entities.Guild;
 
 /**
@@ -39,17 +49,29 @@ import net.dv8tion.jda.api.entities.Guild;
 public class PlayerManager extends DefaultAudioPlayerManager
 {
     private final Bot bot;
-    
-    public PlayerManager(Bot bot)
+    private final BotConfig config;
+
+    public PlayerManager(Bot bot, BotConfig config)
     {
         this.bot = bot;
+        this.config = config;
     }
     
     public void init()
     {
         TransformativeAudioSourceManager.createTransforms(bot.getConfig().getTransforms()).forEach(t -> registerSourceManager(t));
-
+        
         YoutubeAudioSourceManager yt = new YoutubeAudioSourceManager(true);
+        if (config.getYTRoutingPlanner() != YouTubeUtil.RoutingPlanner.NONE)
+        {
+            AbstractRoutePlanner routePlanner = YouTubeUtil.createRouterPlanner(config.getYTRoutingPlanner(), config.getYTIpBlocks());
+            YoutubeIpRotatorSetup rotator = new YoutubeIpRotatorSetup(routePlanner);
+            
+            rotator.forConfiguration(yt.getHttpInterfaceManager(), false)
+                    .withMainDelegateFilter(yt.getContextFilter())
+                    .setup();
+        }
+
         yt.setPlaylistPageCount(bot.getConfig().getMaxYTPlaylistPages());
         registerSourceManager(yt);
 

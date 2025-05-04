@@ -56,7 +56,7 @@ public class Bot
         this.settings = settings;
         this.playlists = new PlaylistLoader(config);
         this.threadpool = Executors.newSingleThreadScheduledExecutor();
-        this.players = new PlayerManager(this);
+        this.players = new PlayerManager(this, config);
         this.players.init();
         this.nowplaying = new NowplayingHandler(this);
         this.nowplaying.init();

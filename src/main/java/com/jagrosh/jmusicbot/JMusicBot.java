@@ -40,6 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
 
+import static com.jagrosh.jmusicbot.utils.YouTubeUtil.GetPoTokenAndVisitorData;
+
 /**
  *
  * @author John Grosh (jagrosh)
@@ -166,6 +168,8 @@ public class JMusicBot
                     + "attempting to connect, please make sure you're connected to the internet");
             System.exit(1);
         }
+
+        GetPoTokenAndVisitorData(config.getChromePath(), config.getChromeDriverPath(), config.getChromeHeadless());
     }
     
     private static CommandClient createCommandClient(BotConfig config, SettingsManager settings, Bot bot)
