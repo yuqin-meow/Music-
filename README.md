@@ -22,7 +22,7 @@ A cross-platform Discord music bot with a clean interface, and that is easy to s
   * Smooth playback
   * Server-specific setup for the "DJ" role that can moderate the music
   * Clean and beautiful menus
-  * Supports many sites, including Youtube, Soundcloud, and more
+  * Supports many sites, including Youtube (or Invidious), Soundcloud, and more
   * Supports many online radio/streams
   * Supports local files
   * Playlist support (both web/youtube, and local)
@@ -30,7 +30,7 @@ A cross-platform Discord music bot with a clean interface, and that is easy to s
 ## Supported sources and formats
 JMusicBot supports all sources and formats supported by [lavaplayer](https://github.com/sedmelluq/lavaplayer#supported-formats):
 ### Sources
-  * YouTube
+  * YouTube (or Invidious)
   * SoundCloud
   * Bandcamp
   * Vimeo
@@ -52,6 +52,17 @@ JMusicBot supports all sources and formats supported by [lavaplayer](https://git
 
 ## Setup
 Please see the [Setup Page](https://jmusicbot.com/setup) to run this bot yourself!
+
+### Using Invidious
+If YouTube links fail to load you can configure the bot to use [Invidious](https://github.com/iv-org/invidious) instances.
+Add an `invidious` section to your `config.txt` with a list of instance URLs:
+
+```
+invidious {
+  instances = [ "https://yewtu.be", "https://piped.video" ]
+}
+```
+The bot will try each instance in order and fall back when one is unavailable.
 
 ## Questions/Suggestions/Bug Reports
 **Please read the [Issues List](https://github.com/jagrosh/MusicBot/issues) before suggesting a feature**. If you have a question, need troubleshooting help, or want to brainstorm a new feature, please start a [Discussion](https://github.com/jagrosh/MusicBot/discussions). If you'd like to suggest a feature or report a reproducible bug, please open an [Issue](https://github.com/jagrosh/MusicBot/issues) on this repository. If you like this bot, be sure to add a star to the libraries that make this possible: [**JDA**](https://github.com/DV8FromTheWorld/JDA) and [**lavaplayer**](https://github.com/sedmelluq/lavaplayer)!

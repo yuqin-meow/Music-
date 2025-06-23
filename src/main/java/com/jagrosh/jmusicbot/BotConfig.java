@@ -48,7 +48,7 @@ public class BotConfig
     private double skipratio;
     private OnlineStatus status;
     private Activity game;
-    private Config aliases, transforms;
+    private Config aliases, transforms, invidious;
 
     private boolean valid = false;
     
@@ -97,6 +97,11 @@ public class BotConfig
             playlistsFolder = config.getString("playlistsfolder");
             aliases = config.getConfig("aliases");
             transforms = config.getConfig("transforms");
+            try {
+                invidious = config.getConfig("invidious");
+            } catch(ConfigException.Missing e) {
+                invidious = ConfigFactory.empty();
+            }
             skipratio = config.getDouble("skipratio");
             dbots = owner == 113156185389092864L;
             
@@ -380,5 +385,17 @@ public class BotConfig
     public Config getTransforms()
     {
         return transforms;
+    }
+
+    public boolean useInvidious()
+    {
+        return invidious != null && invidious.hasPath("instances") && !invidious.getStringList("instances").isEmpty();
+    }
+
+    public java.util.List<String> getInvidiousInstances()
+    {
+        if(useInvidious())
+            return invidious.getStringList("instances");
+        return java.util.Collections.emptyList();
     }
 }
